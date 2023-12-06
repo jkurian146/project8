@@ -1,0 +1,30 @@
+This is a basic move for the Ai player, in our case, it is a white move, not a black move.
+
+The strategy chosen is the maximize captures strategy, as it is very simple and straight forward.
+
+ReversiHexModelAI aiModel = new ReversiHexModelAI(StrategyType.MAXIMIZE);
+ReversiHexModel modelForTesting = new ReversiHexModel();
+aiModel.startGame(9);
+modelForTesting.startGame(9);
+MaximizeCaptureStrategyMock mock = new MaximizeCaptureStrategyMock(modelForTesting);
+
+    modelForTesting.makeMove(4, 2);
+    aiModel.makeMove(4, 2);
+    Assert.assertEquals("Move: [2, 3], discs Captured: 2, Captured Moves: [[2, 3], [3, 4]]\n" +
+                    "Move: [3, 1], discs Captured: 3, Captured Moves: [[3, 1], [4, 2], [4, 3]]\n" +
+                    "Move: [4, 6], discs Captured: 2, Captured Moves: [[4, 6], [4, 5]]\n" +
+                    "Move: [5, 5], discs Captured: 2, Captured Moves: [[5, 5], [4, 5]]",
+            mock.availableMoves());
+
+    // Available moves for the Ai after the player makes their move:
+    // (3, 1), discs captured: 3 *
+    // (5, 5), discs captured: 2
+    // (4, 6), discs captured: 2
+    // (2, 3), discs captured: 2
+
+    // Assert that it made the proper move, by testing the expected captured discs that were
+    // printed by the mock.
+    Assert.assertEquals(DiscColor.WHITE, aiModel.getDiscAt(4, 3).getColor());
+    Assert.assertEquals(DiscColor.WHITE, aiModel.getDiscAt(4, 2).getColor());
+    Assert.assertEquals(DiscColor.WHITE, aiModel.getDiscAt(3, 1).getColor());
+    modelForTesting.makeMove(3, 1); // Make the Ai move to progress through test model.

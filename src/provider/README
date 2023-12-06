@@ -1,0 +1,183 @@
+//INFORMATION ABOUT OUR REVERSI DESIGN
+OUR 2D ARRAY OF CELLS IS MADE:
+[COLUMN][ROW]
+[Q][R] - Axial Coordinate System to represent a hexagon cell
+
+//PLAYER 1 IS WHITE, PLAYER 2 IS BLACK
+
+A CLASS INVARIANT in our design - Game Board size must be odd in IReversiModel
+The game board's size preserves oddness in the model as it stays
+the same after instantiation in constructors (an Illegal Argument Exception
+is thrown if an even size is passed into the constructor) and its oddness  is
+preserved by all methods in the ReversiModel class.
+
+How our move works fundamentally:
+Our move takes the given cell, and chooses to check all 6 sides of its neighboring paths
+to determine if there are more than two neighbors, to see if there are even enough cells to make
+a move in the first place. Regardless of having two neighbors, they must all be valid cells (not out of bounds or null). This
+resulted in us having around 12 helpers for each, of which we abstracted into 2.
+    Then we make a list of the neighbors, not including the chosen cell, all the way
+until the first instance of the current player's color, not including said cell. Then we take these
+lists and if they have a valid amount of neighbors, and the list isn't empty, then we flip all the
+colored pieces on each of the cells in the list to the current players color.
+
+
+Overview:
+    Our code makes a reversi game. It does so by crafting a board with cells in it,
+and having a model that allows the board to change with moves that are being made. Here, we set the
+rules that you can only have a board with a given board size that is odd, to ensure a middle cell.
+Additionally, the boardsize cannot be negative. We assume in our model that the cells are nulled out
+in order to make a hexagonal shape, so we had to make sure that we were aware of this when making our methods
+to check for neighbors. It is assumed for now the game has two players, currently both of which are
+human. In the future, they may be computer players which we have thought about in our implementaiton
+(hence, a Player interface).
+    Furthermore, this version of Reversi currently has certain rules enforced in our RulesKeeper
+class. The RulesKeeper was implemented as a class and not hardcoded into the model, because we
+have to assume that the rules may change in the future - allowing us to just change the
+RulesKeeper implementation, leaving the model functionality the same for the most part.
+
+Quick start:
+One way right now for a player to get started using the code base to make a move would
+be to do:
+IReversi model = new ReversiModel(9);
+Cell chosenCell = new Cell(Cellstate.EMPTY, 3, 3)
+model.completeMove(chosenCell);
+This would allow the user to have a model, to which they can pass in a board size, and it will
+make a board of the given dimensions (by making a X by X square, and nulling out the outer values)
+Then it will set the cells to the correct starting pattern of every other being filled with the opposite
+colored piece around the center cell.
+Then the move will take in the cell and make the move accordingly around this cell.
+
+Key Components: For our game, we currently have a model and a view. Our model consists of our physical
+layout of the board, which is make and can be rendered with different moves. It also contains players
+which can either be human or AI. Finally, it has cells, which make up the board itself, each of one
+with a coordinate on the board. Within our view, we are able to print the board's layout to the screen
+in a string at any point when our textview calls our to String method. Finally, we have tests to ensure
+that everything works correctly.
+
+Key subcomponents: More specifically, in the model we have a board. This is a crafted square that is
+made with the default size of 7 x 7 or can be constructed to a size that a user inputs (N) that would
+make a square of N x N. Then, depending on the dimensions given, it nulls out the values of the cells
+to make it into a hexagonal shaped board. In each individual cell, we set it to empty cell state, meaning
+no one has played on it yet, and then it could also be blackfilled or whitefilled, which represents
+when it has a white piece (which represents player1, or O in our textview) or a black piece (
+which represents player2, or X in our textview). In our coordinates, we have the axial coordinate
+system, so it is (q, r) where q relates to columns and r relates to rows. The model then takes
+in a board and a Ruleskeeper, so that it can ensure that the moves being made and functionality of
+the game is being upheld by the rules given in rules keeper. We have a text view in our view to be
+able to output the board at any point in the game as a string.
+
+Source organization: Within the model, have our model that takes in a board and a rules keeper. It
+uses these to play the game. Our board is made up of individual cells, which is made in our cell class
+and then each cell has a coordinate, which is its own class as well. Then we have players that are
+in the model, to determine whose play it is, and then we have that as an interface because it can be
+either a human player or a AI player.
+
+____________________________________________________________________________________________________
+CHANGES FOR PART 2 FROM INITIAL DESIGN:
+1. Made all necessary fields private to ensure the public can't access and manipulate this data.
+Examples include the field IReversiModel model in TextView, the RuleKeepers rulebook in Board and
+ReversiModel, PlayerType boolean values in ReversiModel.
+2. Initially, our model contained the interface Players to represent the two players in the game.
+However, a Player should not be integrated into the model as Players and the model have different
+purposes. Therefore, we changed the representation of a player to an enum called PlayerType with
+PLAYER1 and PLAYER2, keeping references to Player separate.
+3. Explained more in detail what our Player interface and its methods would do.
+4. Made the Ruleskeeper class final, because the rules for this version of the game should not
+change. Another RulesKeeper class can be implemented for different rules in the future if needed.
+5. Fixed a bug that occurred when trying to flip a path towards the top left at an intermediate
+stage of the game.
+6. We added the final keyword to our board, cell, coordinate, and RuleKeepers classes because these
+classes should not be sub-classed and we wanted to preserve the implementations of these methods
+so that they could not be modified by external users.
+7. We added the additional methods that fulfilled the necessary behavior that we needed for the model.
+This included getting the players score in the middle of the game, and a clear method to see if a move
+was valid or not.
+8. Abstracted more duplicated code in the model and in the View, specifically in the
+ReversiPanelClass.
+
+
+NEW CLASSES WE HAVE DESIGNED:
+1. First, we designed a draw hexagon cell class. This class draws the lines of a singular hexagon
+cell in order to then put it on the panel.
+2. Next, we made a reversiFrame class. This class makes the frame of our display, which results
+in the window that pops up when the main method is run. The frame consists of a panel and is the
+main view for the game.
+3. Next, we made a reversiPanel class. This class represents the the gray background on the frame,
+and results in the design of our hexagon being printed on the frame. It displays all of things that
+we want the user to see. It also manipulates the hexagons in a way that allows players to select and
+deselect a cell.
+4. Next, we made a ReversiMouseAdapter class within our panel. This represents an adapter that reads mouse clicks
+in order to update the state of our game. Additionally, it repaints the panel in order to show
+these updates to the user. We put this in panel because we needed direct access to the panel itself
+5. Next, we made a Main class. This class is the main entry point for the game. It makes our
+view visible to the players, allowing them to see the frame with the panel on it, and allowing them
+to see the display of our game.
+6. Next, we made a ReversiStrategy interface that represents the different strategies a player
+can possibly use in a game of reversi.
+7. Next, we made a class for the specific strategy in order to CaptureMostOnThisTurn. This represents
+a class that uses the strategy in which a player chooses the move that will capture them the most
+pieces. This means that if one move would result in a higher score for the player, then that move
+should be the one that is taken. This is a strategy in order to help the player win the game more
+efficiently.
+6. We also made a ReversiStrategyTests class in order to help test our reversi strategy that we have
+implemented.
+7. we also made a MockBogusReversiModel. This is a mock that has the goal that if we set our model
+to play invalid moves, the view will reflect that showing that the view is tied to a copy model, and
+not our working reversi model from the last assignment.
+8. we also made a MockReversiModel, that is used to make sure that whenever we are looking through
+the list of possible best moves in our strategy, it visits every cell, starting at the bottom right
+corner up to the top left, that way ties will be favored to the top right.
+9. we also made a reversiKeyListener that will outprint if the key p is pressed, which represents a
+pass in our game, or if an enter key is pressed. This then is reflected in the panel, with the hopes
+that it will deselect everything on the screen in either case. In the enter case, it will also tell
+the screen that the players have played a move.
+
+
+---------------------------------------------------------------------------------------------------
+Changes For Part 3:
+1. We added a startGame method to our model, that accepts a boolean value, and throws an illegal
+state argument if the player tries to do anything before startGame is called.
+2. We fixed a bug that we had when you tried to hit a key enter button. Before it was not
+deselecting properly and we wanted to fix this before moving on.
+3. We attempted to fix our copy constructor for our board, so that when used, it made a deep copy
+of the board.
+
+New Classes/Interfaces/Things in general we added:
+1. We first added implementations for human and AI players. We made it so that they could each
+determine the coordinate of where they want to make their next move, in the AI thorugh the
+strategy and in the human, they did nothing because the view handles it as it is the cell that they
+clicked that they want to move on. We also made it so that they could get the player type, that
+way we could delegate back to let them know who's turn it was.
+2. We added an Implementation to our Player interface. This facilitates our human and our AI players
+and gives them the functionality that they need in order to interact with different parts of our
+design
+3. We added a ControllerFeatures interface that holds all of the features for our controller. We
+allow it to make a move, pass, and exit the program. This is because this is the only thing that
+it would need access to, because it is the only functionality that is needed to physically play the
+game, and connect the parts.
+4. We added a class ReversiController, that acts as a listener for player actions and is subscribed
+to both ControllerFeatures and ModelFeatures. This is because it communicates with both in order
+to link the view to the model and sync everything together to communicate with the players.
+5. We added a ModelFeatures interface. This interface holds the features that take place in a model
+which are to notify a player when it is there turn, and to refresh/repaint the view. This features
+allows for players to receive a message when it is there turn that allows them to know when it is
+legal for them to play. It then refreshes the view after a move has been made so that the view
+accurately represents changes that were made in the model.
+6. we also added a command line to our main class. In here, we had it only allow to take in two
+arguments, the first one telling which kind of player they wanted to play for, and the second
+choosing which type of strategy they wanted to use. It would then initialize the values as wished
+depending on which command they typed in. We ended up commenting it out because we were nervous
+that it would mess up the view that we had already created.
+
+The big idea behind our design:
+Our design was made with the mindset of this connectivity between parts:
+The model tells the first instance of the controller, hey its your player's turn. Then the controller
+tells the player hey its your turn. Then, in the case that it is a human player, the view takes
+over and tells the controller where to make the move. Then the controller tells the model to make
+that move. Then it is the next players turn and so the model says hey its your players turn to the
+controller of the second player. Then the controller tells its player that it is there turn. In the
+case that it is AI it the player then asks the strategy for the next move, which the strategy
+provides to the player. Then the player tells the controller that move that it wants to make, and
+then the controller tells the model to make that move. Then it goes back and forth until the game
+is over.
